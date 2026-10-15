@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#075532">
+<meta name="description" content="A festive Donut Landers Christmas slot game with virtual coins.">
+<title>Donut Landers: Christmas Spins</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="game.js"></script>
+</head>
+<body>
+<div class="snow" aria-hidden="true"></div>
+<main class="game-shell">
+  <header class="brand">
+    <div class="eyebrow">A SWEET LITTLE HOLIDAY ARCADE</div>
+    <h1><span>DONUT LANDERS</span><strong>CHRISTMAS SPINS</strong></h1>
+    <p class="subtitle">Line up the Landers — win the Christmas Jackpot!</p>
+  </header>
+  <section class="jackpot-banner" aria-label="Christmas jackpot">
+    <div><span>🎁 CHRISTMAS JACKPOT 🎁</span><small>SPRINKLES → GHOST → CHOCOLATE VON DONUT</small></div>
+    <strong id="jackpotValue">5,000</strong>
+  </section>
+  <section class="machine" aria-label="Christmas slot machine">
+    <div class="machine-top"><span class="lamp">✦</span><span class="top-label">SANTA'S SWEET SPIN MACHINE</span><span class="lamp">✦</span></div>
+    <div class="payline">❄ JACKPOT ORDER: SPRINKLES → GHOST → CHOCOLATE ❄</div>
+    <div class="reels" id="reels" aria-live="polite">
+      <div class="reel-window"><div class="reel-symbol" id="reel0"><span>🎄</span><small>TREE</small></div></div>
+      <div class="reel-window"><div class="reel-symbol" id="reel1"><span>🎁</span><small>GIFT</small></div></div>
+      <div class="reel-window"><div class="reel-symbol" id="reel2"><span>❄️</span><small>SNOWFLAKE</small></div></div>
+    </div>
+    <div class="machine-bottom">✦ GOOD THINGS COME TO THOSE WHO LINE UP! ✦</div>
+  </section>
+  <div class="win-message" id="message" role="status" aria-live="polite">READY FOR A HOLIDAY SPIN?</div>
+  <section class="controls" aria-label="Game controls">
+    <div class="stats">
+      <div class="stat"><span>🎁 DONUT COINS</span><strong id="credits">1,000</strong></div>
+      <div class="stat"><span>✨ LAST WIN</span><strong id="lastWin">0</strong></div>
+      <div class="stat"><span>🏆 BEST WIN</span><strong id="bestWin">0</strong></div>
+    </div>
+    <div class="bet-row"><button class="small-btn" id="betDown" type="button" aria-label="Lower bet">−</button><div class="bet-display"><span>BET PER SPIN</span><strong id="bet">10</strong></div><button class="small-btn" id="betUp" type="button" aria-label="Raise bet">+</button></div>
+    <button class="spin-btn" id="spin" type="button"><span class="spin-star">✦</span><span id="spinText">SPIN!</span><span class="spin-star">✦</span></button>
+    <div class="utility-row"><button class="utility-btn" id="soundBtn" type="button" aria-pressed="true">🔊 SOUND ON</button><button class="utility-btn" id="helpBtn" type="button">HOW TO WIN</button><button class="utility-btn" id="resetBtn" type="button">↻ NEW GAME</button></div>
+  </section>
+  <section class="mascots"><div class="mascot-caption">MEET YOUR HOLIDAY LANDERS</div><img src="assets/donut-landers-trio.png" alt="Sprinkles the witch donut, the friendly ghost donut, and Chocolate Von Donut" width="1536" height="1024"></section>
+  <footer>Just for fun · Virtual coins only · No real-money gambling</footer>
+</main>
+<div class="modal hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal-card"><button class="close" id="closeHelp" type="button" aria-label="Close help">×</button><h2 id="helpTitle">HOW TO WIN</h2>
+  <p>The <b>Christmas Jackpot</b> only hits when all three Donut Landers land in this exact left-to-right order:</p>
+  <div class="order-cards"><div><img src="assets/sprinkles.png" alt=""><b>SPRINKLES</b></div><span>➜</span><div><img src="assets/ghost.png" alt=""><b>GHOST</b></div><span>➜</span><div><img src="assets/chocolate-von-donut.png" alt=""><b>CHOCOLATE</b></div></div>
+  <div class="paytable"><div>Sprinkles → Ghost → Chocolate <b>500× bet</b></div><div>Three Christmas Trees <b>25× bet</b></div><div>Three Gifts <b>15× bet</b></div><div>Three Snowflakes <b>10× bet</b></div><div>Three matching holiday symbols <b>2×–25× bet</b></div><div>Any matching pair <b>2× bet</b></div></div>
+  <p class="fineprint">Virtual coins only. This is a just-for-fun browser game, not real-money gambling.</p><button class="spin-btn modal-ok" id="okHelp" type="button">LET'S SPIN!</button></div>
+</div>
+</body></html>

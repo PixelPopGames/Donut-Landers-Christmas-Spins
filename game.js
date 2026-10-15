@@ -1,0 +1,36 @@
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const symbols = [
+ {id:'sprinkles',name:'Sprinkles',label:'SPRINKLES',image:'assets/sprinkles.png',weight:8,mult:0},
+ {id:'ghost',name:'Ghost',label:'GHOST',image:'assets/ghost.png',weight:8,mult:0},
+ {id:'chocolate',name:'Chocolate Von Donut',label:'CHOCOLATE',image:'assets/chocolate-von-donut.png',weight:8,mult:0},
+ {id:'tree',name:'Christmas Tree',label:'TREE',icon:'🎄',weight:16,mult:25},
+ {id:'gift',name:'Gift',label:'GIFT',icon:'🎁',weight:17,mult:15},
+ {id:'snowflake',name:'Snowflake',label:'SNOWFLAKE',icon:'❄️',weight:18,mult:10},
+ {id:'candycane',name:'Candy Cane',label:'CANDY CANE',icon:'🍭',weight:17,mult:5},
+ {id:'gingerbread',name:'Gingerbread',label:'GINGERBREAD',icon:'🍪',weight:16,mult:4},
+ {id:'bell',name:'Jingle Bell',label:'BELL',icon:'🔔',weight:14,mult:3},
+ {id:'star',name:'Holiday Star',label:'STAR',icon:'⭐',weight:13,mult:2}
+];
+const reelEls = [ $('reel0'), $('reel1'), $('reel2') ];
+const reelWindows = Array.from(document.querySelectorAll('.reel-window'));
+let credits = 1000, bestWin = 0, bet = 10, lastWin = 0, spinning = false, soundOn = true, audioCtx = null;
+// Storage is optional: the game must still start if browser storage is blocked.
+try { credits = Number(localStorage.getItem('dlcsCredits')) || 1000; bestWin = Number(localStorage.getItem('dlcsBestWin')) || 0; } catch (_) {}
+const pick = () => { const total = symbols.reduce((sum,s) => sum+s.weight,0); let r=Math.random()*total; for(const s of symbols){r-=s.weight;if(r<0)return s;} return symbols[0]; };
+function showSymbol(el,s){ el.replaceChildren(); if(s.image){ const img=document.createElement('img'); img.src=s.image; img.alt=s.name; img.onerror=()=>{img.remove();const fallback=document.createElement('span');fallback.className='emoji';fallback.textContent=s.id==='sprinkles'?'🧙‍♀️':s.id==='ghost'?'👻':'🍩';el.prepend(fallback);}; el.appendChild(img);} else {const span=document.createElement('span');span.className='emoji';span.textContent=s.icon;el.appendChild(span);} const label=document.createElement('small');label.textContent=s.label;el.appendChild(label); }
+function render(){ $('credits').textContent=credits.toLocaleString();$('bet').textContent=bet;$('lastWin').textContent=lastWin.toLocaleString();$('bestWin').textContent=bestWin.toLocaleString();$('jackpotValue').textContent=(bet*500).toLocaleString();$('betDown').disabled=spinning||bet<=5;$('betUp').disabled=spinning||bet>=100; }
+function persist(){try{localStorage.setItem('dlcsCredits',String(credits));localStorage.setItem('dlcsBestWin',String(bestWin));}catch(_){}}
+function audio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!audioCtx)audioCtx=new AC();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}catch(_){return null;}}
+function tone(freq,duration=.12,type='sine',volume=.05,delay=0){if(!soundOn)return;try{const c=audio();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,c.currentTime+delay);g.gain.setValueAtTime(.0001,c.currentTime+delay);g.gain.exponentialRampToValueAtTime(volume,c.currentTime+delay+.012);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+delay+duration);o.connect(g);g.connect(c.destination);o.start(c.currentTime+delay);o.stop(c.currentTime+delay+duration+.03);}catch(_){}}
+function playSequence(freqs,duration=.18){freqs.forEach((f,i)=>tone(f,duration,'sine',.055,i*.085));}
+function message(text,win=false){$('message').textContent=text;$('message').classList.toggle('win',win);}
+function confetti(big=false){const icons=big?['🎄','🎁','⭐','🍩','❄️','🔔','✨']:['❄️','🍬','⭐','🎁'];for(let i=0;i<(big?48:18);i++){const e=document.createElement('span');e.className='confetti';e.textContent=icons[Math.floor(Math.random()*icons.length)];e.style.left=Math.random()*100+'vw';e.style.top=(-5-Math.random()*25)+'px';e.style.animationDelay=(Math.random()*.45)+'s';document.body.appendChild(e);window.setTimeout(()=>e.remove(),2200);}}
+function evaluate(result){let payout=0,headline='NO MATCH — KEEP THE HOLIDAY MAGIC GOING!';const jackpot=result[0].id==='sprinkles'&&result[1].id==='ghost'&&result[2].id==='chocolate';if(jackpot){payout=bet*500;headline='🎄 CHRISTMAS JACKPOT! THE LANDERS ARE IN ORDER! 🎄';}else if(result.every(s=>s.id===result[0].id)){if(result[0].mult>0){payout=bet*result[0].mult;headline=`HOLIDAY TRIPLE! ${result[0].name.toUpperCase()} +${payout} COINS!`;}else headline='SO CLOSE! LINE UP THE LANDERS IN ORDER!';}else if(result[0].id===result[1].id||result[1].id===result[2].id||result[0].id===result[2].id){payout=bet*2;headline='SWEET PAIR! +'+payout+' COINS!';}lastWin=payout;credits+=payout;if(payout>bestWin)bestWin=payout;persist();render();if(payout){message(headline,true);playSequence(jackpot||payout>=bet*25?[523,659,784,1047,1319,1568]:[440,554,659,880],.2);confetti(jackpot);}else{message(headline);tone(190,.18,'triangle',.03);}}
+function spin(){if(spinning)return;if(credits<bet){message('NOT ENOUGH COINS — TAP NEW GAME');tone(160,.2,'sawtooth',.03);return;}spinning=true;credits-=bet;lastWin=0;persist();render();$('spin').disabled=true;$('spinText').textContent='SPINNING…';message('JINGLE BELLS… LINE UP YOUR LANDERS!');playSequence([392,494,587,784],.09);reelWindows.forEach(w=>w.classList.add('spinning'));const results=[pick(),pick(),pick()];reelEls.forEach((el,i)=>{let count=0;const interval=window.setInterval(()=>{showSymbol(el,pick());count++;if(count>=9+i*5){window.clearInterval(interval);showSymbol(el,results[i]);reelWindows[i].classList.remove('spinning');tone(440+i*110,.1,'triangle',.045);if(i===2){window.setTimeout(()=>{evaluate(results);spinning=false;$('spin').disabled=false;$('spinText').textContent='SPIN!';render();if(credits<bet)message('OUT OF COINS? TAP NEW GAME!');},250);}}},65);});}
+function resetGame(){if(spinning)return;credits=1000;bet=10;lastWin=0;persist();render();message('FRESH SNOW, FRESH LUCK!');tone(660,.1);}
+function openHelp(){$('helpModal').classList.remove('hidden');$('closeHelp').focus();}function closeHelp(){$('helpModal').classList.add('hidden');$('helpBtn').focus();}
+$('spin').addEventListener('click',()=>{audio();spin();});$('betDown').addEventListener('click',()=>{audio();if(!spinning){bet=Math.max(5,bet-5);tone(500,.07);render();}});$('betUp').addEventListener('click',()=>{audio();if(!spinning){bet=Math.min(100,bet+5);tone(650,.07);render();}});$('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊 SOUND ON':'🔇 SOUND OFF';$('soundBtn').setAttribute('aria-pressed',String(soundOn));if(soundOn){audio();tone(700,.1);}});$('helpBtn').addEventListener('click',openHelp);$('closeHelp').addEventListener('click',closeHelp);$('okHelp').addEventListener('click',closeHelp);$('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))closeHelp();});$('resetBtn').addEventListener('click',resetGame);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('helpModal').classList.contains('hidden'))closeHelp();if((e.code==='Space'||e.code==='Enter')&&e.target===$('spin')){e.preventDefault();audio();spin();}});
+showSymbol(reelEls[0],symbols[0]);showSymbol(reelEls[1],symbols[1]);showSymbol(reelEls[2],symbols[2]);render();
+})();
